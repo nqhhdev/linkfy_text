@@ -4,7 +4,9 @@ import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 import 'package:linkfy_text/src/enum.dart';
 import 'package:linkfy_text/src/model/link.dart';
-import 'package:linkfy_text/src/utils/regex.dart';
+import 'package:url_launcher/url_launcher.dart';
+
+import 'utils/regex.dart';
 
 /// Linkify [text] containing urls, emails or hashtag
 class LinkifyText extends StatelessWidget {
@@ -134,7 +136,7 @@ class LinkifyText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Text.rich(
-      _linkify(
+      LinkifyTextSpans(
           text: text,
           linkStyle: linkStyle,
           onTap: onTap,
@@ -331,7 +333,7 @@ class LinkifySelectableText extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return SelectableText.rich(
-      _linkify(
+      LinkifyTextSpans(
         text: text,
         linkStyle: linkStyle,
         onTap: onTap,
@@ -368,7 +370,116 @@ class LinkifySelectableText extends StatelessWidget {
   }
 }
 
-TextSpan _linkify({
+/// Like Text.rich only that it also correctly disposes of all recognizers
+class CleanRichText extends StatefulWidget {
+  final InlineSpan child;
+  final TextAlign? textAlign;
+  final int? maxLines;
+
+  const CleanRichText(this.child, {Key? key, this.textAlign, this.maxLines})
+      : super(key: key);
+
+  @override
+  State<CleanRichText> createState() => _CleanRichTextState();
+}
+
+class _CleanRichTextState extends State<CleanRichText> {
+  void _disposeTextspan(TextSpan textSpan) {
+    textSpan.recognizer?.dispose();
+    if (textSpan.children != null) {
+      for (final child in textSpan.children!) {
+        if (child is TextSpan) {
+          _disposeTextspan(child);
+        }
+      }
+    }
+  }
+
+  @override
+  void dispose() {
+    super.dispose();
+    if (widget.child is TextSpan) {
+      _disposeTextspan(widget.child as TextSpan);
+    }
+  }
+
+  @override
+  Widget build(BuildContext build) {
+    return Text.rich(
+      widget.child,
+      textAlign: widget.textAlign,
+      maxLines: widget.maxLines,
+    );
+  }
+}
+
+class LinkTextSpan extends TextSpan {
+  // Beware!
+  //
+  // This class is only safe because the TapGestureRecognizer is not
+  // given a deadline and therefore never allocates any resources.
+  //
+  // In any other situation -- setting a deadline, using any of the less trivial
+  // recognizers, etc -- you would have to manage the gesture recognizer's
+  // lifetime and call dispose() when the TextSpan was no longer being rendered.
+  //
+  // Since TextSpan itself is @immutable, this means that you would have to
+  // manage the recognizer from outside the TextSpan, e.g. in the State of a
+  // stateful widget that then hands the recognizer to the TextSpan.
+  final Uri url;
+  final void Function(Uri)? onTap;
+
+  LinkTextSpan(
+      {TextStyle? style,
+      required this.url,
+      String? text,
+      this.onTap,
+      List<InlineSpan>? children})
+      : super(
+          style: style,
+          text: text ?? '',
+          children: children ?? <InlineSpan>[],
+          recognizer: TapGestureRecognizer()
+            ..onTap = () async {
+              if (onTap != null) {
+                onTap(url);
+                return;
+              }
+              if (await canLaunchUrl(url)) {
+                await launchUrl(url);
+              } else {
+                throw 'Could not launch $url';
+              }
+            },
+        ) {
+    _fixRecognizer(this, recognizer!);
+  }
+
+  void _fixRecognizer(TextSpan textSpan, GestureRecognizer recognizer) {
+    if (textSpan.children?.isEmpty ?? true) {
+      return;
+    }
+    final fixedChildren = <InlineSpan>[];
+    for (final child in textSpan.children!) {
+      if (child is TextSpan && child.recognizer == null) {
+        _fixRecognizer(child, recognizer);
+        fixedChildren.add(TextSpan(
+          text: child.text,
+          style: child.style,
+          recognizer: recognizer,
+          children: child.children,
+        ));
+      } else {
+        fixedChildren.add(child);
+      }
+    }
+    textSpan.children!.clear();
+    textSpan.children!.addAll(fixedChildren);
+  }
+}
+
+// ignore: non_constant_identifier_names
+TextSpan LinkifyTextSpans({
   String text = '',
   TextStyle? linkStyle,
   List<LinkType>? linkTypes,
