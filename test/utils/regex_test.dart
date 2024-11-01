@@ -1,5 +1,5 @@
 import 'package:linkfy_text/src/enum.dart';
-import 'package:linkfy_text/src/utils/contants.dart';
+import 'package:linkfy_text/src/utils/matrix_contants.dart';
 import 'package:linkfy_text/src/utils/regex.dart';
 import 'package:test/test.dart';
 
@@ -61,33 +61,33 @@ void main() {
     ///
     test("Should match all emails", () {
       for (final email in emails) {
-        expect(RegExp(Constants.emailRegExp).hasMatch(email), isTrue);
+        expect(RegExp(MatrixConstants.emailRegExp).hasMatch(email), isTrue);
         expect(getMatchedType(email), equals(LinkType.email));
       }
     });
 
     test("Should match all urls", () {
       for (final url in urls) {
-        expect(RegExp(Constants.urlRegExp).hasMatch(url), isTrue);
+        expect(RegExp(MatrixConstants.urlRegExp).hasMatch(url), isTrue);
         expect(getMatchedType(url), equals(LinkType.url));
       }
     });
 
     test("Should match all hashtags", () {
       for (final tag in hashtags) {
-        expect(RegExp(Constants.hashtagRegExp).hasMatch(tag), isTrue);
+        expect(RegExp(MatrixConstants.hashtagRegExp).hasMatch(tag), isTrue);
         expect(getMatchedType(tag), equals(LinkType.hashTag));
       }
     });
     test("Should match all usertags", () {
       for (final tag in userTags) {
-        expect(RegExp(Constants.userTagRegExp).hasMatch(tag), isTrue);
+        expect(RegExp(MatrixConstants.userTagRegExp).hasMatch(tag), isTrue);
         expect(getMatchedType(tag), equals(LinkType.userTag));
       }
     });
     test("Should match all phones", () {
       for (final phone in phoneNums) {
-        expect(RegExp(Constants.phoneRegExp).hasMatch(phone), isTrue);
+        expect(RegExp(MatrixConstants.phoneRegExp).hasMatch(phone), isTrue);
         expect(getMatchedType(phone), equals(LinkType.phone));
       }
     });

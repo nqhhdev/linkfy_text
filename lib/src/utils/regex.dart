@@ -1,20 +1,27 @@
 import 'package:linkfy_text/src/enum.dart';
-import 'package:linkfy_text/src/utils/contants.dart';
+
+// String urlRegExp =
+
+// url regex that accept https, http, www
+String urlRegExp =
+    r'((https?://)?(www\.)?[a-zA-Z0-9@:%._\+~#=]{2,256}\.[a-z]{2,6}\b([-a-zA-Z0-9@:%_\+.~#?&//=]*))';
+
+String hashtagRegExp =
+    r'#[a-zA-Z\u00C0-\u01B4\w_\u1EA0-\u1EF9!$%^&]{1,}(?=\s|$)';
+
+String userTagRegExp =
+    r'@[a-zA-Z\u00C0-\u01B4\w_\u1EA0-\u1EF9!$%^&]{1,}(?=\s|$)';
+String phoneRegExp =
+    r'\s*(?:\+?(\d{1,3}))?[-. (]*(\d{3})[-. )]*(\d{3})[-. ]*(\d{4})(?: *x(\d+))?\s*';
+String emailRegExp =
+    r"([a-zA-Z0-9.a-zA-Z0-9.!#$%&'*+-/=?^_`{|}~]+@[a-zA-Z0-9]+\.[a-zA-Z]+)";
 
 /// construct regexp. pattern from provided link types
 RegExp constructRegExpFromLinkType(List<LinkType> types) {
-  RegExp regexToUse;
-  try {
-    RegExp(Constants.twakeRegex).hasMatch('');
-    regexToUse = RegExp(Constants.twakeRegex);
-  } catch (_) {
-    regexToUse = RegExp(Constants.fallbackRegex);
-  }
-
   // default case where we always want to match url strings
   final len = types.length;
   if (len == 1 && types.first == LinkType.url) {
-    return regexToUse;
+    return RegExp(urlRegExp);
   }
   final buffer = StringBuffer();
   for (var i = 0; i < len; i++) {
@@ -22,34 +29,27 @@ RegExp constructRegExpFromLinkType(List<LinkType> types) {
     final isLast = i == len - 1;
     switch (type) {
       case LinkType.url:
-        isLast
-            ? buffer.write("(${regexToUse.pattern})|(${Constants.urlRegExp})")
-            : buffer.write("(${regexToUse.pattern})|(${Constants.urlRegExp})|");
+        isLast ? buffer.write("($urlRegExp)") : buffer.write("($urlRegExp)|");
         break;
       case LinkType.hashTag:
         isLast
-            ? buffer
-                .write("(${regexToUse.pattern})|(${Constants.hashtagRegExp})")
-            : buffer
-                .write("(${regexToUse.pattern})|(${Constants.hashtagRegExp})|");
+            ? buffer.write("($hashtagRegExp)")
+            : buffer.write("($hashtagRegExp)|");
         break;
       case LinkType.userTag:
         isLast
-            ? buffer
-                .write("(${regexToUse.pattern})|(${Constants.userTagRegExp})")
-            : buffer
-                .write("(${regexToUse.pattern})|(${Constants.userTagRegExp})|");
+            ? buffer.write("($userTagRegExp)")
+            : buffer.write("($userTagRegExp)|");
         break;
       case LinkType.email:
         isLast
-            ? buffer.write("(${regexToUse.pattern})|(${Constants.emailRegExp})")
-            : buffer
-                .write("(${regexToUse.pattern})|(${Constants.emailRegExp})|");
+            ? buffer.write("($emailRegExp)")
+            : buffer.write("($emailRegExp)|");
         break;
       case LinkType.phone:
         isLast
-            ? buffer.write("(${Constants.phoneRegExp})")
-            : buffer.write("(${Constants.phoneRegExp})|");
+            ? buffer.write("($phoneRegExp)")
+            : buffer.write("($phoneRegExp)|");
         break;
       default:
     }
@@ -59,15 +59,15 @@ RegExp constructRegExpFromLinkType(List<LinkType> types) {
 
 LinkType getMatchedType(String match) {
   late LinkType type;
-  if (RegExp(Constants.emailRegExp).hasMatch(match)) {
+  if (RegExp(emailRegExp).hasMatch(match)) {
     type = LinkType.email;
-  } else if (RegExp(Constants.urlRegExp).hasMatch(match)) {
+  } else if (RegExp(urlRegExp).hasMatch(match)) {
     type = LinkType.url;
-  } else if (RegExp(Constants.phoneRegExp).hasMatch(match)) {
+  } else if (RegExp(phoneRegExp).hasMatch(match)) {
     type = LinkType.phone;
-  } else if (RegExp(Constants.userTagRegExp).hasMatch(match)) {
+  } else if (RegExp(userTagRegExp).hasMatch(match)) {
     type = LinkType.userTag;
-  } else if (RegExp(Constants.hashtagRegExp).hasMatch(match)) {
+  } else if (RegExp(hashtagRegExp).hasMatch(match)) {
     type = LinkType.hashTag;
   }
   return type;
