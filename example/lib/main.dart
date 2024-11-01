@@ -35,24 +35,39 @@ class _AppState extends State<App> {
       "types": null
     },
     {
-      "text": "O2. This text contains an email address: example@app.com",
+      "text":
+          "O2. This text contains a url: https://beta.twake.app/web/#/rooms/!LPocZMwdggduCmqzlT:linagora.com",
+      "types": null
+    },
+    {
+      "text": "O3. This text contains a url: !LPocZMwdggduCmqzlT:linagora.com",
+      "types": [LinkType.url]
+    },
+    {
+      "text": "O4. This text contains an email address: example@app.com",
       "types": [LinkType.email]
     },
     {
-      "text": "O3. This text contains an #hashtag",
+      "text": "O5. This text contains an #hashtag",
       "types": [LinkType.hashTag]
     },
     {
-      "text": "O4. This text contains a @user tag",
+      "text": "O6. This text contains a @user tag",
       "types": [LinkType.userTag]
     },
     {
-      "text": "O5. This text contains a phone number: (555) 444 2223",
+      "text":
+          "O7. Check out https://flutter.dev This text contains a phone number: (555) 444 2223 +44 20 7946 0958, https://beta.twake.app/web/#/rooms/!LPocZMwdggduCmqzlT:linagora.com #dm",
+      "types": [LinkType.phone, LinkType.url],
+    },
+    {
+      "text":
+          "O8. This text contains a phone number: (555) 444 2223, (123) 456-7890, +1-123-456-7890, +44 207 9460 958, 020 7946 0958, 020 7946 0958, 919876543210",
       "types": [LinkType.phone]
     },
     {
       "text":
-          "O6. My website url: https://hello.com/GOOGLE search using: www.google.com, social media is facebook.com, additional link https://example.com/method?param=fullstackoverflow.dev, hashtag #trending & mention @dev.user +18009999999",
+          "O9. https://beta.twake.app/web/#/rooms/!LPocZMwdggduCmqzlT:linagora.com My !LPocZMwdggduCmqzlT:linagora.com website url: https://hello.com/GOOGLE search using: www.google.com, social media is facebook.com, additional link https://example.com/method?param=fullstackoverflow.dev, hashtag #trending & mention @dev.user +18009999999",
       "types": [
         LinkType.phone,
         LinkType.email,

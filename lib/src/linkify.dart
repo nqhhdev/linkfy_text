@@ -10,24 +10,25 @@ import 'utils/regex.dart';
 
 /// Linkify [text] containing urls, emails or hashtag
 class LinkifyText extends StatelessWidget {
-  const LinkifyText(this.text,
-      {this.textStyle,
-      this.linkStyle,
-      this.linkTypes,
-      this.onTap,
-      this.customLinkStyles,
-      this.strutStyle,
-      this.textAlign,
-      this.textDirection,
-      this.locale,
-      this.softWrap,
-      this.overflow,
-      this.textScaler,
-      this.maxLines,
-      this.semanticsLabel,
-      this.textWidthBasis,
-      Key? key})
-      : super(key: key);
+  const LinkifyText(
+    this.text, {
+    this.textStyle,
+    this.linkStyle,
+    this.linkTypes,
+    this.onTap,
+    this.customLinkStyles,
+    this.strutStyle,
+    this.textAlign,
+    this.textDirection,
+    this.locale,
+    this.softWrap,
+    this.overflow,
+    this.textScaler,
+    this.maxLines,
+    this.semanticsLabel,
+    this.textWidthBasis,
+    Key? key,
+  }) : super(key: key);
 
   /// text to be linkified
   final String text;
@@ -137,11 +138,13 @@ class LinkifyText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text.rich(
       LinkifyTextSpans(
-          text: text,
-          linkStyle: linkStyle,
-          onTap: onTap,
-          linkTypes: linkTypes,
-          customLinkStyles: customLinkStyles),
+        text: text,
+        textStyle: textStyle,
+        linkStyle: linkStyle,
+        onTap: onTap,
+        linkTypes: linkTypes,
+        customLinkStyles: customLinkStyles,
+      ),
       key: key,
       style: textStyle,
       strutStyle: strutStyle,
@@ -336,6 +339,7 @@ class LinkifySelectableText extends StatelessWidget {
       LinkifyTextSpans(
         text: text,
         linkStyle: linkStyle,
+        textStyle: textStyle,
         onTap: onTap,
         linkTypes: linkTypes,
         customLinkStyles: customLinkStyles,
@@ -429,13 +433,13 @@ class LinkTextSpan extends TextSpan {
   final Uri url;
   final void Function(Uri)? onTap;
 
-  LinkTextSpan(
-      {TextStyle? style,
-      required this.url,
-      String? text,
-      this.onTap,
-      List<InlineSpan>? children})
-      : super(
+  LinkTextSpan({
+    TextStyle? style,
+    required this.url,
+    String? text,
+    this.onTap,
+    List<InlineSpan>? children,
+  }) : super(
           style: style,
           text: text ?? '',
           children: children ?? <InlineSpan>[],
@@ -482,25 +486,39 @@ class LinkTextSpan extends TextSpan {
 TextSpan LinkifyTextSpans({
   String text = '',
   TextStyle? linkStyle,
+  TextStyle? textStyle,
   List<LinkType>? linkTypes,
   Map<LinkType, TextStyle>? customLinkStyles,
+  ThemeData? themeData,
   Function(Link)? onTap,
 }) {
+  textStyle ??= themeData?.textTheme.bodyMedium;
+  linkStyle ??= themeData?.textTheme.bodyMedium?.copyWith(
+    color: themeData.colorScheme.secondary,
+    decoration: TextDecoration.underline,
+  );
+
   final _regExp = constructRegExpFromLinkType(linkTypes ?? [LinkType.url]);
 
   //  return the full text if there's no match or if empty
-  if (!_regExp.hasMatch(text) || text.isEmpty) return TextSpan(text: text);
+  if (!_regExp.hasMatch(text) || text.isEmpty) {
+    return TextSpan(
+      text: text,
+      style: textStyle,
+    );
+  }
 
   final texts = text.split(_regExp);
   final List<InlineSpan> spans = [];
-  final links = _regExp.allMatches(text).toList();
+  final highlights = _regExp.allMatches(text).toList();
 
   for (final text in texts) {
     spans.add(TextSpan(
       text: text,
+      style: textStyle,
     ));
-    if (links.isNotEmpty) {
-      final match = links.removeAt(0);
+    if (highlights.isNotEmpty) {
+      final match = highlights.removeAt(0);
       final link = Link.fromMatch(match);
       // add the link
       spans.add(
