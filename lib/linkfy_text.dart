@@ -3,3 +3,6 @@ library linkfy_text;
 
 export 'src/enum.dart';
 export 'src/linkify.dart';
+export 'src/matrix_linkify.dart';
+export 'src/model/link.dart';
+export 'src/utils/regex.dart';
